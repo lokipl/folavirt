@@ -1,0 +1,51 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+# Ustawianie katalogu aplikacji
+import os
+import sys
+
+# Zmiana katalogu działania aplikacji
+path = os.path.abspath(os.path.dirname(sys.argv[0]))
+libpath = os.path.abspath(path + "/../lib/")
+os.chdir(libpath)
+sys.path.append(libpath)
+
+from folavirt.disks.console.InstallConsole import InstallConsole
+from folavirt.disks.console.LvConsole import LvConsole
+from folavirt.disks.console.SnapshotConsole import SnapshotConsole
+from folavirt.disks.console.IscsiConsole import IscsiConsole
+
+from folavirt.console.Settings import Settings
+
+Settings().setAsScript()
+
+# Wykonywanie komend wiersza poleceń
+try:
+    InstallConsole()
+    LvConsole()
+    SnapshotConsole()
+    IscsiConsole()
+except KeyboardInterrupt:
+    sys.exit(0)
+
+Settings().getUsageHelp()
+
+print(u"\nZMIENNE:")
+print(u"  $VG".ljust(37) + u"nazwa grupy woluminowej")
+print(u"  $LV".ljust(37) + u"nazwa logicznego woluminu")
+print(u"  $DEV".ljust(37) + u"ścieżka do urządzenia blokowego")
+print(u"  $S".ljust(37) + u"wielkość logicznego woluminu typu 'snapshot'")
+print(u"  $C".ljust(37) + u"ilość powtórzeń operacji")
+
+print(u"\nKOMENDY:")
+
+IscsiConsole.printhelp(35, 15)
+LvConsole.printhelp(35, 15)
+SnapshotConsole.printhelp(35, 15)
+InstallConsole.printhelp(35, 15)
+
+Settings().getDefaultOptionsHelp(35)

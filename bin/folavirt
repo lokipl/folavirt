@@ -1,0 +1,65 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
+# Nie wyświetlanie warningów o przestarzałych modułach na CentOS
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+# Ustawianie katalogu aplikacji
+import os
+import sys
+
+# Zmiana katalogu działania aplikacji
+path = os.path.abspath(os.path.dirname(sys.argv[0]))
+libpath = os.path.abspath(path + "/../lib/")
+os.chdir(libpath)
+sys.path.append(libpath)
+
+# ładowanie modułów przetwarzania poleceń
+from folavirt.admin.console.AgentConsole import AgentConsole
+from folavirt.admin.console.BasicConsole import BasicConsole
+from folavirt.admin.console.VmConsole import VmConsole
+from folavirt.admin.console.LabConsole import LabConsole
+from folavirt.admin.console.OwnershipConsole import OwnershipConsole
+from folavirt.admin.console.DiskConsole import DiskConsole
+
+from folavirt.console.Settings import Settings
+
+Settings().setAsScript()
+
+# Przetwarzanie poleceń
+try:
+    AgentConsole()
+    BasicConsole()
+    VmConsole()
+    OwnershipConsole()
+    DiskConsole()
+    LabConsole()
+except KeyboardInterrupt:
+    sys.exit(0)
+
+Settings().getUsageHelp(35)
+
+print(u"\nZMIENNE:")
+print(u"  $VM".ljust(39) + u"nazwa maszyny wirtualnej")
+print(u"  $A".ljust(39) + u"nazwa agenta")
+print(u"  $B".ljust(39) + u"nazwa woluminu bazowego")
+print(u"  $L".ljust(39) + u"nazwa laboratorium")
+print(u"  $T".ljust(39) + u"nazwa szablonu")
+print(u"  $S".ljust(39) + u"wielkość logicznego woluminu typu 'snapshot'")
+print(u"  $D".ljust(39) + u"equal|round|agent -- sposób rozłożenia maszyn wirtualnych pomiędzy agentami")
+print(u"  $U".ljust(39) + u"identyfikatory użytkowników oddzielone przecinkami")
+print(u"  $P".ljust(39) + u"hasło")
+print(u"".ljust(39) + u"lub nazwa pliku z tymi identyfikatorami (każdy w oddzielnym wierszu)")
+
+print(u"\nKOMENDY:")
+BasicConsole.printhelp(37, 15)
+# VmConsole.printhelp(35, 15)
+AgentConsole.printhelp(37, 15)
+BasicConsole.printhelpconsole(37, 15)
+DiskConsole.printhelp(37, 15)
+LabConsole.printhelp(37, 15)
+OwnershipConsole.printhelp(37, 15)
+
+# Wyświetlenie kompletnej pomocy
+Settings().getDefaultOptionsHelp(37)
