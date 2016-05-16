@@ -1,0 +1,206 @@
+<?php
+use \Application\Model\Folavirt\Remote\Domain;
+$options = $domain -> getGraphicConsoleOptions(); 
+?>
+
+<ol class="breadcrumb">
+	<li>
+		<a href="<?php echo $this -> url('panel', array('controller' => 'Panel', 'action' => 'index')); ?>">
+			Lista maszyn wirtualnych
+		</a>
+	</li>
+	<li class="active">
+		Maszyna wirtualna <?php if (isset($domain) && is_object($domain)): ?><?php echo $domain -> getName(); ?><?php endif; ?>
+	</li>
+</ol>
+
+<?php if (isset($error)): ?>
+	<div class="alert alert-danger">
+		Nie można wyświetlić tej maszyny wirtualnej
+	</div>
+<?php else: ?>
+	<div class="panel panel-default vmdetails">
+		<div class="panel-body">
+			<div class="col-xs-9">
+				<?php if ($domain -> getState() == Domain::DOMAIN_RUNNING): ?>
+					<div id="vncapplet"></div>
+					<script type="text/javascript" src="/js/applet.js"></script>
+					<div class="text-center runvncconsole">
+						<button class="btn btn-success" id="runvncinbrowser">
+							<span class="glyphicon glyphicon-tag"></span> Konsola w oknie przeglądarki
+						</button>
+					</div>
+					
+					<script type="text/javascript">
+						var width = <?php echo $config['vncwidth']; ?>;
+						var height = <?php echo $config['vncheight']; ?>;
+						var address = '<?php echo $domain -> getAgent() -> getExternalAddress(); ?>';
+						var port = <?php echo $options['port']; ?>;
+						var newwindow = false;
+						var tmppasswd = '<?php echo $domain -> getTemporaryPassword(); ?>';
+						var scalingfactor = true;
+						
+						$('#runvncinbrowser').click(function(event){
+							event.preventDefault();
+							$('.runvncconsole').hide();
+							var newwindow = false;
+							$('#vncapplet').html(createApplet(width, height, address, port, newwindow, tmppasswd, scalingfactor));
+						});
+					</script>
+				<?php endif; ?>
+			</div>
+			<div class="col-xs-3 text-right">
+				<?php if ($domain -> getState() == Domain::DOMAIN_SHUTOFF): ?>
+					<div>
+						<a href="<?php echo $this -> url('domain', array(
+								'controller' => 'domain', 
+								'action' => 'start',
+								'name' => $domain -> getName())); ?>?back=domain" class="btn btn-success" title="Uruchom maszynę">
+							<span class="glyphicon glyphicon-play"></span> Uruchom
+						</a>
+					</div>
+				<?php endif; ?>
+				<?php if ($domain -> getState() == Domain::DOMAIN_RUNNING): ?>
+					<div>
+						<a href="<?php echo $this -> url('domain', array(
+								'controller' => 'domain', 
+								'action' => 'suspend',
+								'name' => $domain -> getName())); ?>?back=domain" class="btn btn-warning" title="Wstrzymaj maszynę">
+							<span class="glyphicon glyphicon-pause"></span> Wstrzymaj
+						</a>
+					</div>
+					<br />
+					<div>
+						<a href="<?php echo $this -> url('domain', array(
+								'controller' => 'domain', 
+								'action' => 'destroy',
+								'name' => $domain -> getName())); ?>?back=domain" class="btn btn-danger" title="Zatrzymaj maszynę">
+							<span class="glyphicon glyphicon-stop"></span> Zatrzymaj
+						</a>
+					</div>
+					<br />
+					<div>
+						<a href="<?php echo $this -> url('domain', array(
+								'controller' => 'domain', 
+								'action' => 'reset',
+								'name' => $domain -> getName())); ?>?back=domain" class="btn btn-danger" title="Zresetuj maszynę">
+							<span class="glyphicon glyphicon-refresh"></span> Zresetuj
+						</a>
+					</div>
+				<?php endif; ?>
+				<?php if ($domain -> getState() == Domain::DOMAIN_PAUSED): ?>
+					<div>
+						<a href="<?php echo $this -> url('domain', array(
+								'controller' => 'domain', 
+								'action' => 'resume',
+								'name' => $domain -> getName())); ?>?back=domain" class="btn btn-success" title="Wznów maszynę">
+							<span class="glyphicon glyphicon-play"></span> Wznów
+						</a>
+					</div>
+				<?php endif; ?>
+				
+				<?php if ($domain -> getState() == Domain::DOMAIN_RUNNING): ?>
+					<br />
+					<div>
+						<button class="btn btn-primary" id="newwindow">
+							<span class="glyphicon glyphicon-credit-card"></span> Konsola w osobnym oknie
+						</button>
+					</div>
+					<script type="text/javascript">
+						$('#newwindow').click(function(event){
+							event.preventDefault();
+							$("#vncapplet").html('');
+							newwindow = true;
+							scalingfactor = false;
+							$('#vncapplet').html(createApplet(width, height, address, port, newwindow, tmppasswd));
+						});
+					</script>
+				<?php endif; ?>
+								
+				<hr />
+				
+				<dl>
+					<dt>
+						Stan
+					</dt>
+					<dd>
+						<?php if ($domain -> getState() == Domain::DOMAIN_NOSTATE): ?>
+							<span class="text-danger">nieznany</span>
+						<?php endif; ?>
+						<?php if ($domain -> getState() == Domain::DOMAIN_SHUTOFF): ?>
+							<span class="text-danger">wyłączona</span>
+						<?php endif; ?>
+						<?php if ($domain -> getState() == Domain::DOMAIN_SHUTDOWN): ?>
+							<span class="text-warning">w trakcie wyłączania</span>
+						<?php endif; ?>
+						<?php if ($domain -> getState() == Domain::DOMAIN_RUNNING): ?>
+							<span class="text-success">uruchomiona</span>
+						<?php endif; ?>
+						<?php if ($domain -> getState() == Domain::DOMAIN_PAUSED): ?>
+							<span class="text-warning">wstrzymana</span>
+						<?php endif; ?>
+					</dd>
+					<dt>
+						Typ konsoli graficznej
+					</dt>
+					<dd>
+						<?php echo $options['type']; ?>
+					</dd>
+					<dt>
+						Adres IP
+					</dt>
+					<dd>
+						<?php echo $domain -> getAgent() -> getExternalAddress(); ?>
+					</dd>
+					<dt>
+						Port
+					</dt>
+					<dd>
+						<?php if ($options['port'] == "-1"): ?>
+							Automatycznie
+						<?php else: ?>
+							<?php echo $options['port']; ?>
+						<?php endif; ?>
+					</dd>
+					<?php $passwd = $domain -> getTemporaryPassword(); ?>
+					<?php if ($passwd != ""): ?>
+						<dt>
+							Tymczasowe hasło
+						</dt>
+						<dd>
+							<span class="passwdbutton"><a href="#">Pokaż</a></span>
+							<span class="passwd" style="display: none;"><?php echo $passwd ?></span>
+							<span class="passwdhide" style="display: none;"><a href="#">Ukryj</a></span>
+						</dd>
+						<script type="text/javascript">
+							$('.passwdbutton a').click(function(){
+								$(this).hide();
+								$('.passwd').show();
+								$('.passwdhide').show();
+							});
+							$('.passwdhide a').click(function(){
+								$('.passwd').hide();
+								$('.passwdhide').hide();
+								$('.passwdbutton a').show();
+							});
+						</script>
+					<?php endif; ?>
+				</dl>
+				
+				<?php if ($domain -> getState() == Domain::DOMAIN_SHUTOFF): ?>
+					<hr />
+					<h4>Zmiana hasła do VNC</h4>
+					<?php $this -> vncform -> setAttribute('action', $this -> url("domain", array('controller' => 'domain', 'action' => 'changevncpasswd', 'name' => $domain -> getName()))); ?>
+					<?php echo $this -> form() -> openTag($this -> vncform); ?>
+						<?php foreach($this -> vncform as $element): ?>
+							<div class="form-group">
+								<?php echo $element -> getLabel(); ?>
+								<?php echo $this -> formElement($element); ?>
+							</div>
+						<?php endforeach; ?>
+					<?php echo $this -> form() -> closeTag($this -> vncform); ?>
+				<?php endif; ?>
+			</div>
+		</div>
+	</div>
+<?php endif; ?>

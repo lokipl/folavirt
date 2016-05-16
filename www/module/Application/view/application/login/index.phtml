@@ -1,0 +1,57 @@
+<?php
+$this -> form -> prepare();
+$this -> form -> setAttribute('action', $this -> url(null, 
+	array(
+		'controller' => 'login',
+		'action' => 'process',
+	))
+);
+?>
+
+<?php echo $this -> form() -> openTag($this -> form); ?>
+	<div class="form-horizontal">
+		<div class="form-group">
+			<div class="col-xs-offset-3 col-xs-5">
+				<h2 class="text-muted text-center">FolaVirt Web</h2>
+			</div>
+			<div class="col-xs-4"></div>
+		</div>
+		<div class="spacer">&nbsp;</div>
+		<div class="form-group">
+			<?php echo $this -> formLabel($this -> form -> get('login')); ?>
+			<div class="col-xs-5">
+				<?php echo $this -> formElement($this -> form -> get('login')); ?>
+			</div>
+		</div>
+		<div class="form-group">
+			<?php echo $this -> formLabel($this -> form -> get('password')); ?>
+			<div class="col-xs-5">
+				<?php echo $this -> formElement($this -> form -> get('password')); ?>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<div class="col-xs-offset-3 col-xs-5">
+				<button class="btn btn-success loginbutton">
+					Zaloguj
+				</button>
+			</div>
+		</div>
+	</div>
+<?php echo $this -> form() -> closeTag($this -> form); ?>
+
+<?php if (isset($status)): ?>
+	<?php if($status == 'failure'): ?>
+		<div class="alert alert-danger col-xs-offset-3 col-xs-5">
+			Logowanie nie powiodło się.
+		</div>
+	<?php endif; ?>
+<?php endif; ?>
+
+<script type="text/javascript">
+	$('.loginbutton').click(function(){
+		$(this).removeClass('btn-success');
+		$(this).addClass('btn-warning');
+		$(this).html('Trwa logowanie...');
+	});
+</script>

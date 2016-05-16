@@ -1,0 +1,23 @@
+<a href="/">
+	<div class="leftlink">
+		Start
+	</div>
+</a>
+<a href="<?php echo $this -> url('panel', array('controller' => 'panel', 'action' => 'machines')); ?>">
+	<div class="leftlink">
+		Maszyny wirtualne
+	</div>
+</a>
+
+<?php if ($priviliged == true): ?>
+<a href="<?php echo $this -> url('hosts', array('controller' => 'hosts', 'action' => 'index')); ?>">
+	<div class="leftlink">
+		Agenci
+	</div>
+</a>
+<a href="<?php echo $this -> url('hosts', array('controller' => 'hosts', 'action' => 'machines')); ?>">
+	<div class="leftlink">
+		Wszystkie maszyny wirtualne
+	</div>
+</a>
+<?php endif; ?>

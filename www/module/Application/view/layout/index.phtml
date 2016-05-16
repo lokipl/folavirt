@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pl">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		
+		<title>FolaVirt Web</title>
+		
+		<link rel="stylesheet" href="/css/vendor/bootstrap.min.css" />
+		<!-- <link rel="stylesheet" href="/css/vendor/bootstrap-theme.min.css" /> -->
+		<link rel="stylesheet" href="/css/custom.css" />
+		
+		<script type="text/javascript" src="/js/vendor/jquery.min.js"></script>
+		<script type="text/javascript" src="/js/vendor/bootstrap.min.js"></script>
+		
+		<?php /** Skrypty dodane z kontrolera */ echo $this -> headScript(); ?>
+	</head>
+	
+	<body>
+		<header>
+			<?php if (!isset($this -> needlogin)): ?>
+				<div class="container">
+					<a href="/login/logout" class="btn btn-danger pull-right">
+						<span class="glyphicon glyphicon-off"></span> Wyloguj
+					</a>	
+					<span class="pull-right">&nbsp;</span>
+		
+					<h3 class="text-muted">Folavirt Web</h3>
+				</div>
+			<?php endif; ?>
+		</header>
+		
+		<hr />
+		
+		<div class="container">
+			<?php if (isset($sidebar)): ?>
+				<div class="col-xs-3">
+					<?php echo $sidebar; ?>
+				</div>
+				<div class="col-xs-9">
+					<?php echo $content; ?>
+				</div>
+			<?php else: ?>
+				<?php echo $content; ?>
+			<?php endif; ?>
+		</div>
+	</body>
+</html>
