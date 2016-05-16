@@ -1,0 +1,62 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+import socket
+import ConfigParser
+
+# Zmiana katalogu działania aplikacji
+path = os.path.abspath(os.path.dirname(sys.argv[0]))
+libpath = os.path.abspath(path + "/../lib/")
+os.chdir(libpath)
+sys.path.append(libpath)
+
+from folavirt.console.Colors import Colors
+from folavirt.disks.ServerPublisher import ServerPublisher
+from folavirt.sockets.DisksListener import DisksListener
+from folavirt.networking.TcpListener import TcpListener
+from folavirt.disks.TcpRequestHandler import TcpRequestHandler
+from folavirt.console.Settings import Settings
+
+pidfile = "../run/foladiskd-" + socket.gethostname() + ".pid"
+Settings().deamonManage(pidfile)
+
+# Odczyt konfiguracji gniazda tcp
+try:
+    parser = ConfigParser.ConfigParser()
+    parser.readfp(open('../etc/folavirt.ini'))
+    host = parser.get('foladiskd', 'listen')
+    port = int(parser.get('foladiskd', 'port'))
+except ConfigParser.NoSectionError:
+    print(Colors.setred(" * ") + u"Niepoprawna konfiguracja. Sprawdź plik etc/sockets.ini")
+    sys.exit(1)
+
+# Początkowe opublikowanie dysków
+publisher = ServerPublisher(port)
+publisher.publishDisks()
+
+# Uruchomienie nasłuchiwania po TCP
+try:
+    listener = TcpListener(host, port);
+    # Ustawienia konsoli
+    Settings().setAsDeamon('../log/foladiskd.log')
+    listener.setListen(TcpRequestHandler);
+    Settings().setPidFile(pidfile)
+except socket.error:
+    print(Colors.setred(" * ") + u"Błąd tworzenia gniazda, koniec.")
+    sys.exit(1)
+
+# Uruchamianie gniazda nasłuchującego uaktualnień
+listener = DisksListener()
+listener.create()
+
+while 1:
+    # Oczekiwanie na połączenie na gnieździe
+    (conn, address) = listener.getSocket().accept()
+    data = conn.recv(4096)
+    if data.find("UPDATE") == 0:
+        # Odświeżanie stanu Avahi
+        publisher.republish()
+
+

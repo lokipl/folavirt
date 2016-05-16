@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<domain type="kvm">
+	<name>$NAME</name>
+	<memory unit="MiB">768</memory>
+	<vcpu placement="static">1</vcpu>
+	<os>
+		<type arch="x86_64">hvm</type>
+	</os>
+	<devices>
+		<interface type="network">
+			<source network="default" />
+			<mac address="00:11:22:33:44:55" />
+		</interface>
+		<disk device="disk" type="block">
+			<driver name="qemu" type="raw" />
+			<source dev="/dev/disk/by-path/$SOURCEDEV" />
+			<target bus="virtio" dev="vda" />
+		</disk>
+		<graphics autoport="yes" listen="0.0.0.0" port="-1" type="vnc" />
+	</devices>
+</domain>

@@ -1,0 +1,59 @@
+#!/usr/bin/env python2
+# -*- encoding: utf-8 -*-
+
+# Ustawianie katalogu aplikacji
+import os
+import sys
+import socket
+
+# Zmiana katalogu działania aplikacji
+path = os.path.abspath(os.path.dirname(sys.argv[0]))
+libpath = os.path.abspath(path + "/../lib/")
+os.chdir(libpath)
+sys.path.append(libpath)
+
+import ConfigParser
+
+from folavirt.networking.TcpListener import TcpListener
+from folavirt.networking.AvahiBroadcaster import AvahiBroadcaster
+from folavirt.agent.TcpRequestHandler import TcpRequestHandler
+from folavirt.console.Colors import Colors
+from folavirt.console.Settings import Settings
+
+from folavirt.permissions.Ownership import Ownership
+
+# Obsługa parametrów
+pidfile = "../run/folavirtd-" + socket.gethostname() + ".pid"
+Settings().deamonManage(pidfile)
+
+# Inicjowanie uprawnień do maszyn wirtualnych
+try:
+    Ownership()
+except ConfigParser.NoSectionError as e:
+    print(Colors.setred(" * ") + str(e))
+
+# Parsowanie konfiguracji dla gniazda Tcp
+try:
+    parser = ConfigParser.ConfigParser()
+    parser.readfp(open('../etc/folavirt.ini'))
+    host = parser.get('folavirtd', 'listen')
+    port = int(parser.get('folavirtd', 'port'))
+except ConfigParser.NoSectionError:
+    print(Colors.setred(" * ") + u"Niepoprawna konfiguracja. Sprawdź plik etc/sockets.ini")
+    sys.exit(1)
+
+# Rozgłoszenie agenta poprzez avahi
+broadcaster = AvahiBroadcaster('FolaVirt AGENT on '+socket.gethostname(),'_folavirt_agent._tcp', port)
+broadcaster.publish()
+
+# Uruchomienie nasłuchiwacza
+try:
+    listener = TcpListener(host, port);
+    # Ustawienia konsoli
+    Settings().setAsDeamon('../log/folavirtd_'+socket.gethostname() + '.log')
+    listener.setListen(TcpRequestHandler);
+    Settings().setPidFile(pidfile)
+except socket.error:
+    print(Colors.setred(" * ") + u"Błąd tworzenia gniazda, koniec.")
+    sys.exit(1)
+    
